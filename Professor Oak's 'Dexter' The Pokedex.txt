@@ -1,0 +1,318 @@
+#include<stdio.h>
+#include<string.h>
+//Creating the PokemonNode Structure
+typedef struct PokemonNode
+{
+	char name[25];
+	char type[25];
+	char primiaryAbility[20];
+	struct PokemonNode* next;
+};
+//Creating the PlayerNode Structure
+typedef struct PlayerNode
+{
+	char name[25];
+	int pokemonCount;
+	struct PokemonNode* PokemonArray[20];
+	struct PlayerNode* next;
+};
+//Creating the Pokedex Structure
+typedef struct 
+{
+	struct PokemonNode* pokemonListHead;
+	struct PlayerNode* playerListHead;
+}Pokedex;
+//Creates a new node for a Pokemon and will subesquentially return a pointer to that node to the pokemon variable.
+struct PokemonNode* NewPokemonNode(char* name, char* type,
+	char* ability)
+{
+	struct PokemonNode* pokemon = (struct PokemonNode*)malloc(sizeof(struct PokemonNode));
+	strcpy(pokemon->name, name);
+	strcpy(pokemon->primiaryAbility, ability);
+	strcpy(pokemon->type, type);
+
+	pokemon->next = NULL;
+
+	return pokemon;
+}
+//Functionality to retrieve a Pokemon's name from the pokemonListHead
+struct PokemonNode* FindPokemon(Pokedex* pokedex, char* name)
+{
+	struct PokemonNode* temp = pokedex->pokemonListHead;
+
+	while (temp != NULL)
+	{
+		if (strcmp(temp->name, name) == 0)
+			return temp;
+
+		temp = temp->next;
+	}
+
+	return NULL;
+}
+//Functionality to add Pokemon to the Pokedex via the NewPokemonNode
+void AddPokemonToList(Pokedex* pokedex, char* name,
+	char* type, char* ability)
+{
+	if (FindPokemon(pokedex, name) == NULL)
+	{
+		if (pokedex->pokemonListHead == NULL)
+		{
+			pokedex->pokemonListHead = NewPokemonNode(name, type, ability);
+		}
+		else
+		{
+			struct PokemonNode* temp = pokedex->pokemonListHead;
+			while (temp->next != NULL)
+				temp = temp->next;
+
+			temp->next = NewPokemonNode(name, type, ability);
+		}
+		printf("Pokemon has been added\n");
+	}
+	else
+	{
+		printf("That Pokemon already exists!!!\n");
+	}
+}
+//Functionality to add new new PlayerNodes as part of the AddPlayerToList function used into the Pokedex
+struct PlayerNode* NewPlayerNode(char* name)
+{
+	struct PlayerNode* player = (struct PlayerNode*)malloc(sizeof(struct PlayerNode));
+	strcpy(player->name, name);
+  //Making sure the new Trainer starts with 0 Pokemon on their team
+	player->pokemonCount = 0;
+	player->next = NULL;
+
+	return player;
+}
+//Adds the functionality to retrieve the player from the playerListHead
+struct PlayerNode* FindPlayer(Pokedex* pokedex, char* name)
+{
+	struct PlayerNode* temp = pokedex->playerListHead;
+
+	while (temp != NULL)
+	{
+		if (strcmp(temp->name, name) == 0)
+			return temp;
+		temp = temp->next;
+	}
+	return NULL;
+}
+//Functionality to add a trainer to the Pokedex
+void AddPlayerToList(Pokedex* pokedex, char* name)
+{
+	if (FindPlayer(pokedex, name) == NULL)
+	{
+		if (pokedex->playerListHead == NULL)
+		{
+			pokedex->playerListHead = NewPlayerNode(name);
+		}
+		else
+		{
+			struct PlayerNode* temp = pokedex->playerListHead;
+			while (temp->next != NULL)
+				temp = temp->next;
+
+			temp->next = NewPlayerNode(name);
+		}
+		printf("Trainer has been added.\n");
+	}
+	else
+	{
+		printf("That trainer already exist!!!\n");
+	}
+}
+//Functionality to add a Pokemon to a trainer's team
+void AddPokemonToPlayer(Pokedex pokedex, char* playerName, char* pokemonName)
+{
+	struct PlayerNode* player = FindPlayer(&pokedex, playerName);
+	struct PokemonNode* pokemon = FindPokemon(&pokedex, pokemonName);
+	if (player != NULL && pokemon != NULL)
+	{
+		for (int i = 0; i < player->pokemonCount; i++)
+		{
+			if (strcmp(player->PokemonArray[i]->name,pokemonName) == 0)
+			{
+				printf("That Pokemon already exist in that Trainer's Team.\n");
+				return;
+			}
+		}
+
+		player->PokemonArray[player->pokemonCount] = pokemon;
+		player->pokemonCount++;
+
+		printf("The Pokemon has been added to the Trainer's team\n");
+	}
+	else
+		printf("Unable to find the Pokemon or Trainer\n");
+}
+//Functionality to pull all the details from a given pokemon
+void DisplayPokemonDetails(Pokedex pokedex, char* name)
+{
+	struct PokemonNode* temp = pokedex.pokemonListHead;
+
+	while (temp != NULL)
+	{
+		if (strcmp(temp->name, name) == 0)
+		{
+			printf("\nPokemon's Name: %s\n", temp->name);
+			printf("Pokemon's Type: %s\n", temp->type);
+			printf("Pokemon's Primary Ability: %s\n", temp->primiaryAbility);
+			return;
+		}
+		temp = temp->next;
+	}
+	printf("That Pokemon does not exist\n");
+}
+//Functionality to display all details from a given trainer
+void DisplayPlayerDetails(Pokedex pokedex, char* name)
+{
+	struct PlayerNode* temp = pokedex.playerListHead;
+
+	while (temp != NULL)
+	{
+		if (strcmp(temp->name, name) == 0)
+		{
+			printf("\nTrainer Name: %s\n", temp->name);
+			printf("Trainer Pokemon Count: %d\n", temp->pokemonCount);
+
+			printf("Trainer's Pokemons\n");
+			for (int i = 0; i < temp->pokemonCount; i++)
+			{
+				printf("%d. %s\n", (i + 1), temp->PokemonArray[i]);
+			}
+			return;
+		}
+		temp = temp->next;
+	}
+	printf("That trainer does not exist\n");
+}
+//Functionality to print out all the Pokemon
+void ListPokemon(Pokedex pokedex)
+{
+	struct PokemonNode* temp = pokedex.pokemonListHead;
+
+	printf("List of Pokemon\n\n");
+	while (temp != NULL)
+	{
+		printf("%s\n", temp->name);
+		temp = temp->next;
+	}
+	printf("--------------\n\n");
+}
+//Functionality to print out all of the players
+void ListPlayers(Pokedex pokedex)
+{
+	struct PlayerNode* temp = pokedex.playerListHead;
+
+	printf("List of Trainers\n\n");
+	while (temp != NULL)
+	{
+		printf("%s\t", temp->name);
+		for (int i = 0; i < temp->pokemonCount; i++)
+		{
+			printf("%s  ", temp->PokemonArray[i]);
+		}
+		printf("\n");
+		temp = temp->next;
+	}
+	printf("--------------\n\n");
+}
+//Main contains most of the command line's menu functions
+int main()
+{
+	int choice;
+	Pokedex pokedex;
+	pokedex.playerListHead = NULL;
+	pokedex.pokemonListHead = NULL;
+	do 
+	{
+    //Main Menu Printout
+		printf("\nDexter The Pokedex\n");
+		printf("=========\n");
+
+		printf("1. Add a Pokemon to the Pokedex\n");
+		printf("2. Add a Trainer to the Pokedex\n");
+		printf("3. Add a Pokemon to a Player's Team\n");
+		printf("4. Display a Pokemon's Details\n");
+		printf("5. Display a Trainer's Details\n");
+		printf("6. List All Pokemon\n");
+		printf("7. List All Trainers\n");
+		printf("8. Close Pokedex\n");
+
+		printf("\nWhich Option Would You Like To Select: ");
+    //Using "choice" to let the user choose which option of the menu they would like to select
+		scanf("%d", &choice);
+    //Add a Pokemon to the Pokedex
+		if (choice == 1)
+		{
+			char name[25];
+			char type[25];
+			char ability[20];
+
+			printf("Enter The Pokemon's Name: ");
+			scanf("%s", name);
+			printf("Enter The Pokemon's Type: ");
+			scanf("%s", type);
+			printf("Enter The Pokemon's Primary Ability: ");
+			scanf("%s", ability);
+
+			AddPokemonToList(&pokedex, name, type, ability);
+		}
+    //Add a Trainer to the Pokedex
+		else if (choice == 2)
+		{
+			char name[25];
+			printf("Enter The Trainer's Name: ");
+			scanf("%s", name);
+
+			AddPlayerToList(&pokedex, name);
+		}
+    //Add a Pokemon to a Player's Team
+		else if (choice == 3)
+		{
+			char playerName[25];
+			char pokemonName[25];
+
+			printf("Enter The Trainer's Name: ");
+			scanf("%s", playerName);
+			printf("Enter The Pokemon's Name: ");
+			scanf("%s", pokemonName);
+
+			AddPokemonToPlayer(pokedex, playerName, pokemonName);
+		}
+    //Display a Pokemon's Details
+		else if (choice == 4)
+		{
+			char name[25];
+			printf("Enter The Pokemon's Name: ");
+			scanf("%s", name);
+
+			DisplayPokemonDetails(pokedex, name);
+		}
+    //Display a Trainer's Details
+		else if (choice == 5)
+		{
+			char name[25];
+			printf("Enter Trainer's Name: ");
+			scanf("%s", name);
+
+			DisplayPlayerDetails(pokedex, name);
+		}
+    //List all Pokemon
+		else if (choice == 6)
+			ListPokemon(pokedex);
+    //List all Trainers
+		else if (choice == 7)
+			ListPlayers(pokedex);
+    //Close Pokedex
+		else if (choice == 8)
+			break;
+		else
+		{
+			printf("\nInvalid Option Selected, try again!\n");
+		}
+	} while (1);
+	
+}
